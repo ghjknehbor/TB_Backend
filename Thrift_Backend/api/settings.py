@@ -11,7 +11,17 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from mongoengine import connect
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from .env file
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# Connect to MongoDB using the URI from .env
+mongodb_uri = os.getenv('MONGODB_URI')
+connect(host=mongodb_uri)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
