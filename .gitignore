@@ -21,6 +21,7 @@ media
 pyvenv.cfg
 bin/*
 Thrift_Backend/__pycache__/*
+/thrift-env
 
 # Generated files
 .idea/**/contentModel.xml
