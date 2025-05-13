@@ -29,9 +29,9 @@ class register(graphene.Mutation):
         user.save()
         return register(email=user.email,password=user.password,fullname=user.fullname,gender=user.gender)
 class Query(graphene.ObjectType):
-    all_users = graphene.List(UserType)
+    getAllusers = graphene.List(UserType)
 
-    def resolve_all_users(root, info):
+    def resolve_getAllusers(root, info):
         return list(Users.objects.all())
 class Mutation(graphene.ObjectType):
     register = register.Field()
