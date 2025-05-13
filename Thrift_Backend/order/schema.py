@@ -43,7 +43,7 @@ class placeOrder(graphene.Mutation):
 			size_type=order.size_type
 		)
 class Query(graphene.ObjectType):
-	getAllOrders = graphene.List(OrderType)
+	getAllorders = graphene.List(OrderType)
 
 	def resolve_getAllorders(root, info):
 		return list(Orders.objects.all())

@@ -6,7 +6,7 @@ class AdmType(MongoengineObjectType):
 	class Meta:
 		model = Admins
 
-class register(graphene.Mutation):
+class createAdmin(graphene.Mutation):
 	class Arguments:
 		fullname = graphene.String()
 		email = graphene.String(required=True)
@@ -22,13 +22,13 @@ class register(graphene.Mutation):
 			fullname = fullname
 		)
 		admin.save()
-		return register(email=admin.email,password=admin.password,fullname=admin.fullname)
+		return createAdmin(email=admin.email,password=admin.password,fullname=admin.fullname)
 class Query(graphene.ObjectType):
-	getAllAdmins = graphene.List(AdmType)
+	getAlladmins = graphene.List(AdmType)
 
-	def resolve_getAllAdmins(root, info):
+	def resolve_getAlladmins(root, info):
 		return list(Admins.objects.all())
 class Mutation(graphene.ObjectType):
-	register = register.Field()
+	createAdmin = createAdmin.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
