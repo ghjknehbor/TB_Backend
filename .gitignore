@@ -108,6 +108,9 @@ venv/
 ENV/ 
 env.bak/ 
 venv.bak/ 
+include/
+bin/
+lib64/
 
 # mkdocs documentation 
 /site 
@@ -314,3 +317,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+lib64

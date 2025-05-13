@@ -1,6 +1,12 @@
 import graphene
+import users.schema as users
+import admins.schema as admins
+import order.schema as orders
 
-class Query(graphene.ObjectType):
-    testquery = graphene.String(default_value="Hi!")
+class Query(users.schema.query, admins.schema.query, orders.schema.query, graphene.ObjectType):
+    pass
 
-schema = graphene.Schema(query=Query)
+class Mutation(users.schema.mutation, admins.schema.mutation, orders.schema.mutation, graphene.ObjectType):
+    pass
+
+schema = graphene.Schema(query=Query, mutation=Mutation)

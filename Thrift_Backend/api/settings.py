@@ -48,7 +48,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
-    'users'
+    'users',
+	'admins',
+	'order'
 ]
 
 MIDDLEWARE = [
@@ -136,5 +138,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Graphene configuration
 
 GRAPHENE = {
-    "SCHEMA": "users.schema.schema"
+    "SCHEMA": "api.schema.schema"
 }
