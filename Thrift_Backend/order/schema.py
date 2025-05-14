@@ -7,7 +7,8 @@ from users.models import Users
 from product.models import products
 def get_authenticated_user(info):
     auth_header = info.context.META.get("HTTP_AUTHORIZATION")
-
+    if not auth_header:
+        raise GraphQLError("Token required")
     token = auth_header.split(" ")[1]
 
     try:
