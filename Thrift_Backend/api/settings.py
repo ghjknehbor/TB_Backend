@@ -143,5 +143,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Graphene configuration
 
 GRAPHENE = {
-    "SCHEMA": "api.schema.schema"
+    "SCHEMA": "api.schema.schema",
+    'MIDDLEWARE': ['graphql_jwt.middleware.JSONWebTokenMiddleware',]
 }
+AUTHENTICATION_BACKENDS = [
+    'graphql_jwt.backends.JSONWebTokenBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
