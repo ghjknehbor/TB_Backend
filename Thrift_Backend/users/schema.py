@@ -5,6 +5,7 @@ from graphql import GraphQLError
 from graphene_mongo import MongoengineObjectType
 from .models import Users
 import graphql_jwt
+import bcrypt
 from django.contrib.auth.hashers import check_password,make_password
 from graphql_jwt.utils import jwt_encode
 
@@ -24,7 +25,8 @@ class register(graphene.Mutation):
     fullname = graphene.String()
     gender = graphene.String()
     def mutate(self,info,email, password, fullname=None, gender=None):
-        hashedpassword = make_password(password)
+        password = password.encode('utf-8')
+        hashedpassword = bcrypt.hashpw(password, bcrypt.gensalt(10))
         user = Users(
             email=email,
             password=hashedpassword,
@@ -39,11 +41,12 @@ class login(graphene.Mutation):
         password = graphene.String(required=True)
     token = graphene.String()
     def mutate(self,info,email,password):
+        password = password.encode('utf-8')
         try:
             user = Users.objects.get(email=email)
         except Users.DoesNotExist:
             raise GraphQLError("Invalid Credentials")
-        if not check_password(password,user.password):
+        if not bcrypt.checkpw(password,user.password.encode('utf-8')):
             raise GraphQLError("Invalid Credentials")
         payload = {
             "email": user.email,
