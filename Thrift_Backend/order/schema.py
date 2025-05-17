@@ -4,7 +4,7 @@ from graphql import GraphQLError
 from .models import Orders
 from graphql_jwt.utils import jwt_decode
 from users.models import Users
-from product.models import products
+from product.models import Products
 def get_authenticated_user(info):
     auth_header = info.context.META.get("HTTP_AUTHORIZATION")
     if not auth_header:
@@ -20,7 +20,8 @@ def get_authenticated_user(info):
 class OrderType(MongoengineObjectType):
 	class Meta:
 		model = Orders
-
+          
+# CreateOrder Still requires some fixing, Like Subtracting the size stock amount
 class CreateOrder(graphene.Mutation):
     class Arguments:
         product_id = graphene.String(required=True)
@@ -37,8 +38,8 @@ class CreateOrder(graphene.Mutation):
         user = get_authenticated_user(info)
 
         try:
-            product = products.objects.get(id=product_id)
-        except products.DoesNotExist:
+            product = Products.objects.get(id=product_id)
+        except Products.DoesNotExist:
             raise GraphQLError("Product not found")
 
         total_price = product.price * quantity * ((100-product.discount_rate)/100)

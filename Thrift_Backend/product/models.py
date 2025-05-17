@@ -1,11 +1,12 @@
 from mongoengine import Document, StringField, FloatField,IntField
 
-class products(Document):
+class Products(Document):
     product_name = StringField(required=True)
     gender = StringField(required=True)
     price = FloatField(required=True)
     discount_rate = FloatField(required=True)
     category_type = StringField(required=True)
-    sold_amount = IntField(required=True)
-    Total_stock = IntField(required=True)
+    sold_amount = IntField(default=0)
+    Total_stock = IntField(default=0)
+    imagePath = StringField(required=True)
     meta = {'strict': False}

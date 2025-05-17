@@ -1,3 +1,6 @@
-from django.db import models
+from mongoengine import Document, StringField, FloatField,IntField
 
-# Create your models here.
+class Sizes(Document):
+    product_id = StringField(required=True)
+    size_type = StringField(required=True)
+    stock_amount = IntField(required=True)

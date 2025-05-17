@@ -4,9 +4,7 @@ import graphene
 from graphql import GraphQLError
 from graphene_mongo import MongoengineObjectType
 from .models import Users
-import graphql_jwt
 import bcrypt
-from django.contrib.auth.hashers import check_password,make_password
 from graphql_jwt.utils import jwt_encode
 
 class UserType(MongoengineObjectType):
@@ -19,7 +17,6 @@ class register(graphene.Mutation):
         password = graphene.String(required=True)
         gender = graphene.String()
 
-    # user = graphene.Field(UserType)
     email = graphene.String()
     password = graphene.String()
     fullname = graphene.String()
