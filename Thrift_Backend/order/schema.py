@@ -5,6 +5,7 @@ from .models import Orders
 from graphql_jwt.utils import jwt_decode
 from users.models import Users
 from product.models import Products
+from size.models import Sizes
 def get_authenticated_user(info):
     auth_header = info.context.META.get("HTTP_AUTHORIZATION")
     if not auth_header:
@@ -21,7 +22,7 @@ class OrderType(MongoengineObjectType):
 	class Meta:
 		model = Orders
           
-# CreateOrder Still requires some fixing, Like Subtracting the size stock amount
+# Create Order Logic Done, Need to add order status to model(?) maybe
 class CreateOrder(graphene.Mutation):
     class Arguments:
         product_id = graphene.String(required=True)
@@ -43,7 +44,17 @@ class CreateOrder(graphene.Mutation):
             raise GraphQLError("Product not found")
 
         total_price = product.price * quantity * ((100-product.discount_rate)/100)
+        product.sold_amount += quantity
+        product.Total_stock -= quantity
+        product.save()
 
+        try:
+            FetchedSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
+        except Sizes.DoesNotExist:
+            raise GraphQLError("Size not found")
+        
+        FetchedSize.stock_amount -= quantity
+        FetchedSize.save()
         order = Orders(
             customer_id=str(user.id),
             product_id=product_id,
