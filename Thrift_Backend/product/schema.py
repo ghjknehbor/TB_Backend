@@ -3,6 +3,21 @@ from graphql import GraphQLError
 from graphene_mongo import MongoengineObjectType
 from .models import Products
 from size.models import Sizes
+from admins.models import Admins
+from graphql_jwt.utils import jwt_decode
+
+def get_authenticated_admin(info):
+    auth_header = info.context.META.get("HTTP_AUTHORIZATION")
+    if not auth_header:
+        raise GraphQLError("Token required")
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt_decode(token)
+        return Admins.objects.get(id=payload.get("admin_id"))
+    except:
+        raise GraphQLError("Invalid or expired token")
+
 class ProductType(MongoengineObjectType):
     class Meta:
         model = Products
@@ -22,6 +37,7 @@ class CreateProduct(graphene.Mutation):
     category_type = graphene.String()
     imagePath = graphene.String()
     def mutate(self,info,product_name,gender,price,discount_rate,category_type,imagePath):
+        admin = get_authenticated_admin(info)
         product = Products(
             product_name=product_name,
             gender=gender,
@@ -41,6 +57,7 @@ class AddProductSize(graphene.Mutation):
     size_type = graphene.String()
     stock_amount = graphene.Int()
     def mutate(self,info,product_id,size_type,stock_amount):
+        admin = get_authenticated_admin(info)
         size = Sizes(
             product_id=product_id,
             size_type=size_type,
@@ -63,6 +80,7 @@ class updateProductSizeStock(graphene.Mutation):
     size_type = graphene.String()
     stock_amount = graphene.Int()
     def mutate(self,info,product_id,size_type,stock_amount):
+        admin = get_authenticated_admin(info)
         try:
             ExistingSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
         except Sizes.DoesNotExist:
@@ -85,6 +103,7 @@ class updateProduct(graphene.Mutation):
     product_id = graphene.String()
     discount_rate = graphene.Float()
     def mutate(self,info,product_id,product_name,discount_rate):
+        admin = get_authenticated_admin(info)
         try:
             FetchedProduct = Products.objects.get(id=product_id)
         except Products.DoesNotExist:

@@ -37,40 +37,40 @@ class CreateOrder(graphene.Mutation):
 
     def mutate(self, info, product_id, quantity, size_type):
         user = get_authenticated_user(info)
+        if user:
+            try:
+                product = Products.objects.get(id=product_id)
+            except Products.DoesNotExist:
+                raise GraphQLError("Product not found")
 
-        try:
-            product = Products.objects.get(id=product_id)
-        except Products.DoesNotExist:
-            raise GraphQLError("Product not found")
+            total_price = product.price * quantity * ((100-product.discount_rate)/100)
+            product.sold_amount += quantity
+            product.Total_stock -= quantity
+            product.save()
 
-        total_price = product.price * quantity * ((100-product.discount_rate)/100)
-        product.sold_amount += quantity
-        product.Total_stock -= quantity
-        product.save()
+            try:
+                FetchedSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
+            except Sizes.DoesNotExist:
+                raise GraphQLError("Size not found")
+            
+            FetchedSize.stock_amount -= quantity
+            FetchedSize.save()
+            order = Orders(
+                customer_id=str(user.id),
+                product_id=product_id,
+                quantity=quantity,
+                total_price=total_price,
+                size_type=size_type
+            )
+            order.save()
 
-        try:
-            FetchedSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
-        except Sizes.DoesNotExist:
-            raise GraphQLError("Size not found")
-        
-        FetchedSize.stock_amount -= quantity
-        FetchedSize.save()
-        order = Orders(
-            customer_id=str(user.id),
-            product_id=product_id,
-            quantity=quantity,
-            total_price=total_price,
-            size_type=size_type
-        )
-        order.save()
-
-        return CreateOrder(
-            customer_id=str(order.customer_id),
-            product_id=str(order.product_id),
-            quantity=order.quantity,
-            total_price=order.total_price,
-            size_type=order.size_type
-        )
+            return CreateOrder(
+                customer_id=str(order.customer_id),
+                product_id=str(order.product_id),
+                quantity=order.quantity,
+                total_price=order.total_price,
+                size_type=order.size_type
+            )
 class Query(graphene.ObjectType):
 	getAllorders = graphene.List(OrderType)
 
