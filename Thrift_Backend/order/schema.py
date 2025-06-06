@@ -73,9 +73,16 @@ class CreateOrder(graphene.Mutation):
             )
 class Query(graphene.ObjectType):
 	getAllorders = graphene.List(OrderType)
-
+	getOrderByCustomerId = graphene.List(OrderType)
+	getOrderbyProductId = graphene.List(OrderType,product_id=graphene.String(required=True))
+    
 	def resolve_getAllorders(root, info):
 		return list(Orders.objects.all())
+	def resolve_getOrderByCustomerId(root, info):
+		user = get_authenticated_user(info)
+		return list(Orders.objects.filter(customer_id=str(user.id)))
+	def resolve_getOrderbyProductId(root,info,product_id):
+	    return list(Orders.objects.filter(product_id=product_id))
 	
 class Mutation(graphene.ObjectType):
 	createOrder = CreateOrder.Field()
