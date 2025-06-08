@@ -58,42 +58,50 @@ class AddProductSize(graphene.Mutation):
     stock_amount = graphene.Int()
     def mutate(self,info,product_id,size_type,stock_amount):
         admin = get_authenticated_admin(info)
-        size = Sizes(
-            product_id=product_id,
-            size_type=size_type,
-            stock_amount=stock_amount
-        )
-        size.save()
         try:
             FetchedProduct = Products.objects.get(id=product_id)
         except Products.DoesNotExist:
             raise GraphQLError("This Product does not exist")
-        FetchedProduct.Total_stock += stock_amount
-        FetchedProduct.save()
-        return AddProductSize(product_id=size.product_id,size_type=size.size_type,stock_amount=size.stock_amount)
-class updateProductSizeStock(graphene.Mutation):
-    class Arguments:
-        product_id = graphene.String(required=True)
-        size_type = graphene.String(required=True)
-        stock_amount = graphene.Int(required=True)
-    product_id = graphene.String()
-    size_type = graphene.String()
-    stock_amount = graphene.Int()
-    def mutate(self,info,product_id,size_type,stock_amount):
-        admin = get_authenticated_admin(info)
         try:
-            ExistingSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
+            existingSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
+            existingSize.stock_amount += stock_amount
+            existingSize.save()
+            FetchedProduct.Total_stock += stock_amount
+            FetchedProduct.save()
+            return AddProductSize(product_id=str(existingSize.product_id),size_type=existingSize.size_type,stock_amount=existingSize.stock_amount)
         except Sizes.DoesNotExist:
-            raise GraphQLError("This Size does not exist")
-        ExistingSize.stock_amount += stock_amount
-        ExistingSize.save()
-        try:
-            FetchedProduct = Products.objects.get(id=product_id)
-        except Products.DoesNotExist:
-            raise GraphQLError("Internal Error, check database")
-        FetchedProduct.Total_stock += stock_amount
-        FetchedProduct.save()
-        return updateProductSizeStock(product_id=ExistingSize.product_id,size_type=ExistingSize.size_type,stock_amount=ExistingSize.stock_amount)
+            FetchedProduct.Total_stock += stock_amount
+            FetchedProduct.save()
+            newSize = Sizes(
+                product_id=product_id,
+                size_type=size_type,
+                stock_amount=stock_amount
+            )
+            newSize.save()
+            return AddProductSize(product_id=str(newSize.product_id),size_type=newSize.size_type,stock_amount=newSize.stock_amount)
+# class updateProductSizeStock(graphene.Mutation):
+#     class Arguments:
+#         product_id = graphene.String(required=True)
+#         size_type = graphene.String(required=True)
+#         stock_amount = graphene.Int(required=True)
+#     product_id = graphene.String()
+#     size_type = graphene.String()
+#     stock_amount = graphene.Int()
+#     def mutate(self,info,product_id,size_type,stock_amount):
+#         admin = get_authenticated_admin(info)
+#         try:
+#             ExistingSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
+#         except Sizes.DoesNotExist:
+#             raise GraphQLError("This Size does not exist")
+#         ExistingSize.stock_amount += stock_amount
+#         ExistingSize.save()
+#         try:
+#             FetchedProduct = Products.objects.get(id=product_id)
+#         except Products.DoesNotExist:
+#             raise GraphQLError("Internal Error, check database")
+#         FetchedProduct.Total_stock += stock_amount
+#         FetchedProduct.save()
+#         return updateProductSizeStock(product_id=ExistingSize.product_id,size_type=ExistingSize.size_type,stock_amount=ExistingSize.stock_amount)
 class updateProduct(graphene.Mutation):
     class Arguments:
         product_name = graphene.String(required=True)
@@ -120,7 +128,7 @@ class Query(graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     createProduct = CreateProduct.Field()
     AddProductSize = AddProductSize.Field()
-    updateProductSizeStock = updateProductSizeStock.Field()
+    # updateProductSizeStock = updateProductSizeStock.Field()
     updateProduct = updateProduct.Field()
 
 schema = graphene.Schema(query=Query,mutation=Mutation)
