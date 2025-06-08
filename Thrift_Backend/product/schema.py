@@ -136,6 +136,7 @@ class Query(graphene.ObjectType):
     getProductbyBrand = graphene.List(ProductType,brand=graphene.String(required=True))
     getTrendingProducts = graphene.List(ProductType)
     getLimitedStockProducts = graphene.List(ProductType)
+    getDiscountedProducts = graphene.List(ProductType)
     getProductsizes = graphene.List(SizeType,product_id=graphene.String(required=True))
     getProductbySize = graphene.Field(SizeType,product_id=graphene.String(required=True),size_type=graphene.String(required=True))
     def resolve_getAllProducts(root, info):
@@ -150,6 +151,8 @@ class Query(graphene.ObjectType):
         return list(Products.objects.filter(sold_amount__gt=20))
     def resolve_getLimitedStockProducts(root,info):
         return list(Products.objects.filter(Total_stock__lt=6))
+    def resolve_getDiscountedProducts(root,info):
+        return list(Products.objects.filter(discount_rate__gt=0))
     def resolve_getProductsizes(root,info,product_id):
         return list(Sizes.objects.filter(product_id=product_id))
     def resolve_getProductbySize(root,info,product_id,size_type):

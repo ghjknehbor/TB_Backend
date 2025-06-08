@@ -59,6 +59,19 @@ class addProducttoShoppingcart(graphene.Mutation):
                 )
                 newShoppingcart.save()
                 return addProducttoShoppingcart(customer_id=newShoppingcart.customer_id,product_id=newShoppingcart.product_id,product_name=newShoppingcart.product_name,quantity=newShoppingcart.quantity,total_price=newShoppingcart.total_price,size_type=newShoppingcart.size_type)
+class RemoveFromShoppingCart(graphene.Mutation):
+    class Arguments:
+        ShoppingCartID = graphene.String(required=True)
+    message = graphene.String()
+    def mutate(self,info,ShoppingCartID):
+        user = get_authenticated_user(info)
+        if user:
+            try:
+                previousProductinCart = shoppingcarts.objects.get(id=ShoppingCartID)
+                previousProductinCart.delete()
+                return RemoveFromShoppingCart(message="Product successfully removed from Cart")
+            except shoppingcarts.DoesNotExist:
+                raise GraphQLError("Product in shopping cart not found, cannot be removed")             
 class Query(graphene.ObjectType):
 	getAllshoppingCart = graphene.List(shoppingCartType)
 	getShoppingcartBycustomerId = graphene.List(shoppingCartType)
@@ -70,5 +83,5 @@ class Query(graphene.ObjectType):
 		return list(shoppingcarts.objects.filter(customer_id=str(user.id)))
 class Mutation(graphene.ObjectType):
 	addProducttoShoppingcart = addProducttoShoppingcart.Field()
-
+	removeProductfromCart = RemoveFromShoppingCart.Field()
 schema = graphene.Schema(query=Query,mutation=Mutation)

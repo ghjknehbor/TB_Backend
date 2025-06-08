@@ -45,6 +45,19 @@ class AddToWishList(graphene.Mutation):
                 customer_id=str(user.id),
                 product_name=product.product_name
             )
+class RemoveFromwishList(graphene.Mutation):
+    class Arguments:
+        wishlist_id = graphene.String(required=True)
+    message = graphene.String()
+    def mutate(self,info,wishlist_id):
+        user = get_authenticated_user(info)
+        if user:
+            try:
+                previousWishList = Wishlists.objects.get(id=wishlist_id)
+                previousWishList.delete()
+                return RemoveFromwishList(message="Product successfully removed from wishlist")
+            except Wishlists.DoesNotExist:
+                raise GraphQLError("Wishlist not found, cannot be removed") 
 class Query(graphene.ObjectType):
 	getAllWishLists = graphene.List(WishListType)
 	getWishListByCustomerId = graphene.List(WishListType)
@@ -55,5 +68,6 @@ class Query(graphene.ObjectType):
 		return list(Wishlists.objects.filter(customer_id=str(user.id)))
 class Mutation(graphene.ObjectType):
 	addToWishList = AddToWishList.Field()
+	removeFromwishList = RemoveFromwishList.Field()
 
 schema = graphene.Schema(query=Query,mutation=Mutation)

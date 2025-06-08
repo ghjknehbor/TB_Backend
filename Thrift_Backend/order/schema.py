@@ -6,6 +6,7 @@ from graphql_jwt.utils import jwt_decode
 from users.models import Users
 from product.models import Products
 from size.models import Sizes
+from shoppingCart.models import shoppingcarts
 def get_authenticated_user(info):
     auth_header = info.context.META.get("HTTP_AUTHORIZATION")
     if not auth_header:
@@ -51,10 +52,16 @@ class CreateOrder(graphene.Mutation):
             product.save()
 
             try:
+                oldShoppingcart = shoppingcarts.objects.get(product_id=product_id,size_type=size_type,quantity=quantity)
+                oldShoppingcart.delete()
+            except shoppingcarts.DoesNotExist:
+                raise GraphQLError("Product not in shopping cart, can't move product to order")
+            try:
                 FetchedSize = Sizes.objects.get(product_id=product_id,size_type=size_type)
             except Sizes.DoesNotExist:
                 raise GraphQLError("Size not found")
-            
+            if FetchedSize.stock_amount < quantity:
+                raise GraphQLError("Not enough quantity in products to order")
             FetchedSize.stock_amount -= quantity
             FetchedSize.save()
             order = Orders(
