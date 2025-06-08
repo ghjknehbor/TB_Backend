@@ -4,3 +4,4 @@ class Wishlists(Document):
     product_id = StringField(required=True)
     customer_id = StringField(required=True)
     product_name = StringField(required=True)
+    meta = {'strict': False}

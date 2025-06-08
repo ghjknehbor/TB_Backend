@@ -28,14 +28,16 @@ class CreateOrder(graphene.Mutation):
         product_id = graphene.String(required=True)
         quantity = graphene.Int(required=True)
         size_type = graphene.String(required=True)
+        location = graphene.String(required=True)
 
     customer_id = graphene.String()
     product_id = graphene.String()
     quantity = graphene.Int()
     total_price = graphene.Float()
     size_type = graphene.String()
+    location = graphene.String()
 
-    def mutate(self, info, product_id, quantity, size_type):
+    def mutate(self, info, product_id, quantity, size_type,location):
         user = get_authenticated_user(info)
         if user:
             try:
@@ -60,7 +62,8 @@ class CreateOrder(graphene.Mutation):
                 product_id=product_id,
                 quantity=quantity,
                 total_price=total_price,
-                size_type=size_type
+                size_type=size_type,
+                location=location
             )
             order.save()
 
@@ -69,7 +72,8 @@ class CreateOrder(graphene.Mutation):
                 product_id=str(order.product_id),
                 quantity=order.quantity,
                 total_price=order.total_price,
-                size_type=order.size_type
+                size_type=order.size_type,
+                location=location
             )
 class Query(graphene.ObjectType):
 	getAllorders = graphene.List(OrderType)

@@ -6,4 +6,5 @@ class Orders(Document):
 	quantity = IntField(required=True)
 	total_price = FloatField(required=True)
 	size_type = StringField(required=True)
+	location = StringField(required=True)
 	meta = {'strict': False}

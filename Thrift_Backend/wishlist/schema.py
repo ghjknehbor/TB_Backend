@@ -47,9 +47,12 @@ class AddToWishList(graphene.Mutation):
             )
 class Query(graphene.ObjectType):
 	getAllWishLists = graphene.List(WishListType)
-
+	getWishListByCustomerId = graphene.List(WishListType)
 	def resolve_getAllWishLists(root, info):
 		return list(Wishlists.objects.all())
+	def resolve_getWishListByCustomerId(root, info):
+		user = get_authenticated_user(info)
+		return list(Wishlists.objects.filter(customer_id=str(user.id)))
 class Mutation(graphene.ObjectType):
 	addToWishList = AddToWishList.Field()
 

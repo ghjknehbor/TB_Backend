@@ -21,6 +21,9 @@ def get_authenticated_admin(info):
 class ProductType(MongoengineObjectType):
     class Meta:
         model = Products
+class SizeType(MongoengineObjectType):
+    class Meta:
+        model = Sizes
 class CreateProduct(graphene.Mutation):
     class Arguments:
         product_name = graphene.String(required=True)
@@ -29,6 +32,8 @@ class CreateProduct(graphene.Mutation):
         discount_rate = graphene.Float(required=True)
         category_type = graphene.String(required=True)
         imagePath = graphene.String(required=True)
+        brand = graphene.String(required=True)
+        description = graphene.String(required=True)
     
     product_name = graphene.String()
     gender = graphene.String()
@@ -36,7 +41,9 @@ class CreateProduct(graphene.Mutation):
     discount_rate = graphene.Float()
     category_type = graphene.String()
     imagePath = graphene.String()
-    def mutate(self,info,product_name,gender,price,discount_rate,category_type,imagePath):
+    brand = graphene.String()
+    description = graphene.String()
+    def mutate(self,info,product_name,gender,price,discount_rate,category_type,imagePath,brand,description):
         admin = get_authenticated_admin(info)
         product = Products(
             product_name=product_name,
@@ -44,10 +51,12 @@ class CreateProduct(graphene.Mutation):
             price=price,
             discount_rate=discount_rate,
             category_type=category_type,
-            imagePath=imagePath
+            imagePath=imagePath,
+            brand=brand,
+            description=description
         )
         product.save()
-        return CreateProduct(product_name=product.product_name,gender=product.gender,price=product.price,discount_rate=product.discount_rate,category_type=product.category_type,imagePath=product.imagePath)
+        return CreateProduct(product_name=product.product_name,gender=product.gender,price=product.price,discount_rate=product.discount_rate,category_type=product.category_type,imagePath=product.imagePath,brand=product.brand,description=product.description)
 class AddProductSize(graphene.Mutation):
     class Arguments:
         product_id = graphene.String(required=True)
@@ -122,9 +131,29 @@ class updateProduct(graphene.Mutation):
         return updateProduct(product_id=FetchedProduct.id,product_name=FetchedProduct.product_name,discount_rate=FetchedProduct.discount_rate)
 class Query(graphene.ObjectType):
     getAllProducts = graphene.List(ProductType)
-
+    getProductbyId = graphene.Field(ProductType,id=graphene.ID(required=True))
+    getProductbyCategory = graphene.List(ProductType,category_type=graphene.String(required=True))
+    getProductbyBrand = graphene.List(ProductType,brand=graphene.String(required=True))
+    getTrendingProducts = graphene.List(ProductType)
+    getLimitedStockProducts = graphene.List(ProductType)
+    getProductsizes = graphene.List(SizeType,product_id=graphene.String(required=True))
+    getProductbySize = graphene.Field(SizeType,product_id=graphene.String(required=True),size_type=graphene.String(required=True))
     def resolve_getAllProducts(root, info):
         return list(Products.objects.all())
+    def resolve_getProductbyId(root,info,id):
+        return Products.objects.get(id=id)
+    def resolve_getProductbyCategory(root,info,category_type):
+        return list(Products.objects.filter(category_type=category_type))
+    def resolve_getProductbyBrand(root,info,brand):
+        return list(Products.objects.filter(brand=brand))
+    def resolve_getTrendingProducts(root,info):
+        return list(Products.objects.filter(sold_amount__gt=20))
+    def resolve_getLimitedStockProducts(root,info):
+        return list(Products.objects.filter(Total_stock__lt=6))
+    def resolve_getProductsizes(root,info,product_id):
+        return list(Sizes.objects.filter(product_id=product_id))
+    def resolve_getProductbySize(root,info,product_id,size_type):
+        return Sizes.objects.get(product_id=product_id, size_type=size_type)
 class Mutation(graphene.ObjectType):
     createProduct = CreateProduct.Field()
     AddProductSize = AddProductSize.Field()
